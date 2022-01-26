@@ -22,6 +22,21 @@ rutasProductos.route('/productos').get(async (req, res) => {
   res.status(200).send({ productos });
 });
 
-rutasProductos.route('/productos').post();
+rutasProductos.route('/productos').post(async (req, res) => {
+  const datosProducto = req.body;
+  try {
+    const nuevoProducto = await prisma.producto.create({
+      data: {
+        nombre: datosProducto.nombre,
+        descripcion: datosProducto.descripcion,
+        precio: parseFloat(datosProducto.precio),
+      },
+    });
+
+    res.status(200).send({ status: 'ok', producto: nuevoProducto });
+  } catch {
+    res.status(500).send({ status: 'error' });
+  }
+});
 
 export { rutasProductos };
