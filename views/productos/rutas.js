@@ -17,7 +17,11 @@ const rutasProductos = express.Router();
 // ];
 
 rutasProductos.route('/productos').get(async (req, res) => {
-  const productos = await prisma.producto.findMany();
+  const productos = await prisma.producto.findMany({
+    orderBy: {
+      nombre: 'asc',
+    },
+  });
 
   res.status(200).send({ productos });
 });
@@ -34,6 +38,48 @@ rutasProductos.route('/productos').post(async (req, res) => {
     });
 
     res.status(200).send({ status: 'ok', producto: nuevoProducto });
+  } catch {
+    res.status(500).send({ status: 'error' });
+  }
+});
+
+rutasProductos.route('/productos').delete(async (req, res) => {
+  const datosProducto = req.body;
+  console.log(datosProducto);
+  try {
+    await prisma.venta.deleteMany({
+      where: {
+        producto: {
+          id: {
+            equals: datosProducto.id,
+          },
+        },
+      },
+    });
+    await prisma.producto.delete({
+      where: {
+        id: datosProducto.id,
+      },
+    });
+    res.status(200).send({ status: 'ok' });
+  } catch {
+    res.status(500).send({ status: 'error' });
+  }
+});
+
+rutasProductos.route('/productos').put(async (req, res) => {
+  const datosProducto = req.body;
+  console.log(datosProducto);
+  try {
+    await prisma.producto.update({
+      where: {
+        id: datosProducto.id,
+      },
+      data: {
+        ...datosProducto.datosEditados,
+      },
+    });
+    res.status(200).send({ status: 'ok' });
   } catch {
     res.status(500).send({ status: 'error' });
   }
